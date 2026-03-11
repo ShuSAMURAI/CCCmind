@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campus Coffee Club — Mind Map</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Noto+Sans+JP:wght@300;400;500;700&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --espresso: #1a0f08;
+    --roast: #3d1f0d;
+    --caramel: #c47a2b;
+    --cream: #f5ead8;
+    --latte: #d4a96a;
+    --steam: #ede0cc;
+    --milk: #faf5ec;
+    --accent: #e8621a;
+    --muted: #8c6a4a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--espresso);
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.5;
+  }
+
+  .page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 60px 40px 100px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 80px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards;
+  }
+
+  .header-badge {
+    display: inline-block;
+    background: var(--caramel);
+    color: var(--espresso);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    padding: 6px 18px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(52px, 8vw, 96px);
+    font-weight: 900;
+    line-height: 1;
+    color: var(--cream);
+    letter-spacing: -2px;
+  }
+
+  .header h1 span {
+    color: var(--caramel);
+  }
+
+  .header-tagline {
+    color: var(--steam);
+    font-size: 15px;
+    margin-top: 20px;
+    line-height: 1.8;
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+    letter-spacing: 0.3px;
+  }
+
+  .header-sub {
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+    font-size: 13px;
+    letter-spacing: 2px;
+    margin-top: 16px;
+  }
+
+  /* Divider */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 0 auto 80px;
+    max-width: 600px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.2s forwards;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--caramel), transparent);
+  }
+  .divider-icon {
+    width: 28px;
+    height: 28px;
+    background: var(--caramel);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+
+  /* Grid layout */
+  .mindmap-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 24px;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--roast);
+    border: 1px solid rgba(196, 122, 43, 0.15);
+    border-radius: 16px;
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(24px);
+    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--caramel);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(196, 122, 43, 0.4);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+  }
+
+  .card:hover::before { opacity: 1; }
+
+  .card.visible {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.6s ease, transform 0.6s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .card-why { grid-column: 1 / 2; grid-row: 1 / 2; }
+  .card-vision { grid-column: 2 / 3; grid-row: 1 / 2; }
+  .card-values { grid-column: 3 / 4; grid-row: 1 / 2; }
+  .card-activities { grid-column: 1 / 2; grid-row: 2 / 3; }
+  .card-org { grid-column: 2 / 3; grid-row: 2 / 3; }
+  .card-culture { grid-column: 3 / 4; grid-row: 2 / 3; }
+
+  /* Card number */
+  .card-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--caramel);
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card-num::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(196, 122, 43, 0.3);
+  }
+
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--cream);
+    margin-bottom: 6px;
+    line-height: 1.1;
+  }
+
+  .card-subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-bottom: 28px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* Sections within cards */
+  .section {
+    margin-bottom: 20px;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--caramel);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* Items */
+  .item-list {
+    list-style: none;
+  }
+
+  .item-list li {
+    color: var(--steam);
+    font-size: 13px;
+    line-height: 1.6;
+    padding: 6px 0 6px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    position: relative;
+  }
+
+  .item-list li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--latte);
+    font-size: 10px;
+  }
+
+  .item-list li:last-child { border-bottom: none; }
+
+  .item-list li.sub {
+    padding-left: 28px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .item-list li.sub::before {
+    content: '·';
+    left: 16px;
+    color: var(--muted);
+  }
+
+  /* Tag pills */
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .tag {
+    background: rgba(196, 122, 43, 0.12);
+    border: 1px solid rgba(196, 122, 43, 0.25);
+    color: var(--latte);
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.5px;
+  }
+
+  /* Value blocks */
+  .value-block {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .value-icon {
+    width: 36px;
+    height: 36px;
+    background: rgba(196, 122, 43, 0.15);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .value-text h4 {
+    font-family: 'Playfair Display', serif;
+    color: var(--cream);
+    font-size: 15px;
+    margin-bottom: 2px;
+  }
+
+  .value-text p {
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  /* Activity dots */
+  .activity-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .activity-item:last-child { border-bottom: none; }
+
+  .activity-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--caramel);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .activity-name {
+    color: var(--steam);
+    font-size: 13px;
+  }
+
+  /* Org tree */
+  .org-leader {
+    background: linear-gradient(135deg, rgba(196,122,43,0.2), rgba(196,122,43,0.05));
+    border: 1px solid rgba(196,122,43,0.3);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .org-leader h4 {
+    color: var(--caramel);
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+
+  .org-roles {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+
+  .org-role {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+  }
+
+  .org-role-icon { font-size: 18px; margin-bottom: 6px; }
+  .org-role-name {
+    color: var(--cream);
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  .org-role-en {
+    color: var(--muted);
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+  }
+  .org-role-desc {
+    color: var(--muted);
+    font-size: 11px;
+    margin-top: 6px;
+  }
+
+  /* Culture pills */
+  .culture-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .culture-item:last-child { border-bottom: none; }
+
+  .culture-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    color: rgba(196,122,43,0.3);
+    line-height: 1;
+    flex-shrink: 0;
+    width: 32px;
+  }
+
+  .culture-text {
+    color: var(--steam);
+    font-size: 13px;
+    line-height: 1.6;
+    padding-top: 4px;
+  }
+
+  /* Vision items */
+  .vision-item {
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .vision-item:last-child { border-bottom: none; }
+
+  .vision-arrow {
+    color: var(--caramel);
+    font-size: 18px;
+    flex-shrink: 0;
+    line-height: 1.5;
+  }
+
+  .vision-text {
+    color: var(--cream);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.6;
+  }
+
+  /* Bottom banner */
+  .footer {
+    margin-top: 60px;
+    text-align: center;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 1.2s forwards;
+  }
+
+  .footer-inner {
+    display: inline-flex;
+    align-items: center;
+    gap: 24px;
+    background: var(--roast);
+    border: 1px solid rgba(196,122,43,0.2);
+    border-radius: 100px;
+    padding: 16px 40px;
+  }
+
+  .footer-text {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+
+  .footer-dot {
+    width: 4px;
+    height: 4px;
+    background: var(--caramel);
+    border-radius: 50%;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Decorative background rings */
+  .bg-ring {
+    position: fixed;
+    border-radius: 50%;
+    border: 1px solid rgba(196,122,43,0.06);
+    pointer-events: none;
+  }
+  .bg-ring-1 { width: 600px; height: 600px; top: -200px; right: -200px; }
+  .bg-ring-2 { width: 400px; height: 400px; bottom: -100px; left: -100px; }
+
+  @media (max-width: 1100px) {
+    .mindmap-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .card-why { grid-column: 1; grid-row: 1; }
+    .card-vision { grid-column: 2; grid-row: 1; }
+    .card-values { grid-column: 1; grid-row: 2; }
+    .card-activities { grid-column: 2; grid-row: 2; }
+    .card-org { grid-column: 1; grid-row: 3; }
+    .card-culture { grid-column: 2; grid-row: 3; }
+  }
+
+  @media (max-width: 680px) {
+    .mindmap-grid { grid-template-columns: 1fr; }
+    .card { grid-column: 1 !important; grid-row: auto !important; }
+    .org-roles { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-ring bg-ring-1"></div>
+<div class="bg-ring bg-ring-2"></div>
+
+<div class="page">
+
+  <div class="header">
+    <div class="header-badge">Mind Map 2026</div>
+    <h1>Campus<br><span>Coffee</span> Club</h1>
+    <div class="header-sub">CCC · SHINAGAWA CAMPUS</div>
+    <p class="header-tagline">CCCは、コーヒーをきっかけに人がつながる<br>キャンパスコミュニティをつくるプロジェクトです。</p>
+  </div>
+
+  <div class="divider">
+    <div class="divider-icon">☕</div>
+  </div>
+
+  <div class="mindmap-grid">
+
+    <!-- WHY -->
+    <div class="card card-why">
+      <div class="card-num">01 / WHY</div>
+      <div class="card-title">なぜCCCを<br>やるのか</div>
+      <div class="card-subtitle">PURPOSE & REASON</div>
+
+      <div class="section">
+        <div class="section-label">☕ なぜコーヒー？</div>
+        <ul class="item-list">
+          <li>短時間でも交流が生まれる（5分コミュニティ）</li>
+          <li>世界中の人が共有する文化</li>
+          <li>世代を超えて親しまれている飲み物</li>
+          <li>学びのテーマが豊富</li>
+        </ul>
+        <div class="tags">
+          <span class="tag">文化</span>
+          <span class="tag">国際交流</span>
+          <span class="tag">環境</span>
+          <span class="tag">ビジネス・流通</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">📍 なぜ品川？</div>
+        <ul class="item-list">
+          <li>3・4年生のみ → 学生交流が少ない</li>
+          <li>ゼミ・研究室中心の閉じたコミュニティ</li>
+          <li>新幹線・空港アクセスの交通ハブ</li>
+          <li>周辺に多くのコーヒーショップ</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- VISION -->
+    <div class="card card-vision">
+      <div class="card-num">02 / VISION</div>
+      <div class="card-title">目指す<br>未来</div>
+      <div class="card-subtitle">WHERE WE'RE GOING</div>
+
+      <div class="vision-item">
+        <div class="vision-arrow">→</div>
+        <div class="vision-text">コーヒーをきっかけに人がつながるキャンパス</div>
+      </div>
+      <div class="vision-item">
+        <div class="vision-arrow">→</div>
+        <div class="vision-text">学生が気軽に立ち寄れるコミュニティ</div>
+      </div>
+      <div class="vision-item">
+        <div class="vision-arrow">→</div>
+        <div class="vision-text">品川に新しい学生文化をつくる</div>
+      </div>
+    </div>
+
+    <!-- VALUES -->
+    <div class="card card-values">
+      <div class="card-num">03 / VALUES</div>
+      <div class="card-title">大切にする<br>価値観</div>
+      <div class="card-subtitle">CORE VALUES</div>
+
+      <div class="value-block">
+        <div class="value-icon">🤝</div>
+        <div class="value-text">
+          <h4>Community</h4>
+          <p>人と人のつながりを育む</p>
+        </div>
+      </div>
+
+      <div class="value-block">
+        <div class="value-icon">📚</div>
+        <div class="value-text">
+          <h4>Education</h4>
+          <p>コーヒーから社会を学ぶ</p>
+        </div>
+      </div>
+
+      <div class="value-block">
+        <div class="value-icon">🌱</div>
+        <div class="value-text">
+          <h4>Sustainability</h4>
+          <p>環境と資源循環を考える</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVITIES -->
+    <div class="card card-activities">
+      <div class="card-num">04 / ACTIVITIES</div>
+      <div class="card-title">主な<br>活動</div>
+      <div class="card-subtitle">WHAT WE DO</div>
+
+      <div class="activity-item">
+        <div class="activity-dot"></div>
+        <div class="activity-name">コーヒー抽出体験</div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot"></div>
+        <div class="activity-name">Free Coffee イベント</div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot"></div>
+        <div class="activity-name">English Coffee</div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot"></div>
+        <div class="activity-name">サステナブル活動</div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot"></div>
+        <div class="activity-name">地域・大学イベント参加</div>
+      </div>
+    </div>
+
+    <!-- ORGANIZATION -->
+    <div class="card card-org">
+      <div class="card-num">05 / ORGANIZATION</div>
+      <div class="card-title">組織<br>構造</div>
+      <div class="card-subtitle">HOW WE'RE ORGANIZED</div>
+
+      <div class="org-leader">
+        <h4>Leader — Shu</h4>
+        <ul class="item-list">
+          <li>ビジョン共有・外部連携</li>
+          <li>メンバー面談（必要に応じて）</li>
+        </ul>
+      </div>
+
+      <div class="org-roles">
+        <div class="org-role">
+          <div class="org-role-icon">💰</div>
+          <div class="org-role-name">会計</div>
+          <div class="org-role-en">Finance</div>
+          <div class="org-role-desc">ビジネス・支出管理</div>
+        </div>
+        <div class="org-role">
+          <div class="org-role-icon">📱</div>
+          <div class="org-role-name">広報</div>
+          <div class="org-role-en">Media</div>
+          <div class="org-role-desc">SNS・ブランディング</div>
+        </div>
+        <div class="org-role">
+          <div class="org-role-icon">✨</div>
+          <div class="org-role-name">企画</div>
+          <div class="org-role-en">Creative</div>
+          <div class="org-role-desc">イベント・オフィス</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CULTURE -->
+    <div class="card card-culture">
+      <div class="card-num">06 / CULTURE</div>
+      <div class="card-title">CCCの<br>文化</div>
+      <div class="card-subtitle">HOW WE WORK</div>
+
+      <div class="culture-item">
+        <div class="culture-num">01</div>
+        <div class="culture-text">役割はあるが、アイデアはみんな自由</div>
+      </div>
+      <div class="culture-item">
+        <div class="culture-num">02</div>
+        <div class="culture-text">他の役割の活動にも参加OK</div>
+      </div>
+      <div class="culture-item">
+        <div class="culture-num">03</div>
+        <div class="culture-text">コーヒーを通じて自然に交流</div>
+      </div>
+      <div class="culture-item">
+        <div class="culture-num">04</div>
+        <div class="culture-text">Leaderも含めて一緒に挑戦するチーム</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <div class="footer-inner">
+      <span class="footer-text">COMMUNITY</span>
+      <div class="footer-dot"></div>
+      <span class="footer-text">EDUCATION</span>
+      <div class="footer-dot"></div>
+      <span class="footer-text">SUSTAINABILITY</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Staggered card entrance animation
+  const cards = document.querySelectorAll('.card');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => {
+          entry.target.classList.add('visible');
+        }, Array.from(cards).indexOf(entry.target) * 120);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  cards.forEach(card => observer.observe(card));
+</script>
+
+</body>
+</html>
